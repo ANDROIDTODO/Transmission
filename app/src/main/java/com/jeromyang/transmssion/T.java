@@ -5,5 +5,7 @@ package com.jeromyang.transmssion;
  */
 
 public class T {
-    public static final int PORT = 16911;
+    public static final int UDP_PORT = 16911;
+
+
 }

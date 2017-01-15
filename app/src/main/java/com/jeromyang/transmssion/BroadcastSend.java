@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 
 /**
  * Created by Jeromeyang on 2017/1/14.
@@ -76,7 +75,7 @@ public class BroadcastSend extends Thread {
         try {
             InetAddress inetAddress = InetAddress.getByName(Packet.getInstance().getCurrentBroadcastIpName());
             ByteArrayOutputStream byteArrayOutputStream = getOutputStream();
-            DatagramPacket datagramPacket = new DatagramPacket(byteArrayOutputStream.toByteArray(),byteArrayOutputStream.toByteArray().length,inetAddress,T.PORT);
+            DatagramPacket datagramPacket = new DatagramPacket(byteArrayOutputStream.toByteArray(),byteArrayOutputStream.toByteArray().length,inetAddress,T.UDP_PORT);
             datagramSocket.send(datagramPacket);
 
         } catch (IOException e) {

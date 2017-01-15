@@ -1,11 +1,15 @@
 package com.jeromyang.transmssion;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -14,6 +18,7 @@ import com.jeromyang.transmssion.base.BaseActivity;
 import com.jeromyang.transmssion.event.OnlineEvent;
 import com.jeromyang.transmssion.model.DataResult;
 import com.jeromyang.transmssion.model.OnlineModel;
+import com.jeromyang.transmssion.utils.FileUtil;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -29,10 +34,13 @@ public class MainActivity extends BaseActivity {
 
     TextView setTe;
     RecyclerView onLineListView;
+    Toolbar toolbar;
     OnlineRecyclerAdapter onlineRecyclerAdapter;
 
     private BroadcastDiscover broadcastDiscover;
     private BroadcastSend broadcastSend;
+
+
 
     @Override
     protected void onDestroy() {
@@ -48,15 +56,9 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         EventBus.getDefault().register(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setTe = (TextView) findViewById(R.id.receive);
-        onLineListView = (RecyclerView) findViewById(R.id.online_list);
-        onlineRecyclerAdapter = new OnlineRecyclerAdapter();
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
-        onLineListView.setLayoutManager(layoutManager);
-        onLineListView.setItemAnimator(new DefaultItemAnimator());
-        onLineListView.setAdapter(onlineRecyclerAdapter);
 
+        initView();
 
         broadcastDiscover = new BroadcastDiscover(new BroadcastDiscover.Listener() {
             @Override
@@ -88,6 +90,57 @@ public class MainActivity extends BaseActivity {
         broadcastSend.start();
     }
 
+    private void initView() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setTe = (TextView) findViewById(R.id.receive);
+        onLineListView = (RecyclerView) findViewById(R.id.online_list);
+        onlineRecyclerAdapter = new OnlineRecyclerAdapter();
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+
+        onLineListView.setLayoutManager(layoutManager);
+        onLineListView.setItemAnimator(new DefaultItemAnimator());
+        onLineListView.setAdapter(onlineRecyclerAdapter);
+
+        toolbar.inflateMenu(R.menu.base_toolbar_menu);
+
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                int menuId = item.getItemId();
+                if (menuId == R.id.action_setting){
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("*/*");
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    try {
+                        startActivityForResult( Intent.createChooser(intent, "Select a File to Upload"), 0xaa);
+                    } catch (android.content.ActivityNotFoundException ex) {
+                    }
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        if(resultCode != RESULT_OK){
+            return;
+        }
+
+        switch (requestCode){
+            case 0xaa :
+                    Uri selectedMediaUri = data.getData();
+                TLog.e("choice path : " + FileUtil.getPath(this,selectedMediaUri));
+                break;
+            default:
+                break;
+        }
+    }
 
     private void updateOnline(final int size) {
         runOnUiThread(new Runnable() {

@@ -13,6 +13,12 @@ import java.io.ByteArrayOutputStream;
 public class Packet {
 
     public static final int DATA_TYPE_ONLINE = 0xA1;
+    public static final int DATA_TYPE_REQUEST = 0xA2;
+    public static final int DATA_TYPE_RESPONSE = 0xA3;
+    public static final int DATA_TYPE_SUCCESS = 0xA4;
+
+
+
 
 
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <item name="action_setting" type="id"/>
+    <item name="action_document" type="id"/>
+    <item name="action_open_download" type="id"/>
+</resources>

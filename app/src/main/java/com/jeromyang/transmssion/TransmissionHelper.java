@@ -17,7 +17,7 @@ public class TransmissionHelper {
 
         if (datagramSocket==null){
             try {
-                datagramSocket  = new DatagramSocket(T.PORT);
+                datagramSocket  = new DatagramSocket(T.UDP_PORT);
                 datagramSocket.setBroadcast(true);
             } catch (SocketException e) {
                 e.printStackTrace();
