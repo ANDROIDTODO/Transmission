@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:toolbar="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.jeromyang.transmssion.MainActivity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="match_parent"
+        android:id="@+id/linearLayout">
+        <android.support.v7.widget.Toolbar
+            android:layout_width="match_parent"
+            android:background="@color/colorPrimary"
+            toolbar:title="文件传输助手"
+            toolbar:titleTextColor="@android:color/white"
+            toolbar:subtitle="企鹅网络内部使用"
+            toolbar:subtitleTextColor="@android:color/white"
+            android:layout_height="wrap_content">
+
+
+
+        </android.support.v7.widget.Toolbar>
+
+    <TextView
+        android:layout_marginLeft="16dp"
+        android:id="@+id/receive"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:text="当前局域网在线人数：0" />
+
+    <android.support.v7.widget.RecyclerView
+
+        android:id="@+id/online_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </android.support.v7.widget.RecyclerView>
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_send_white_48dp"
+        android:theme="@style/MyFloatingButton"
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="20dp"
+        android:layout_marginRight="20dp"
+        android:id="@+id/floatingActionButton" />
+</android.support.design.widget.CoordinatorLayout>

@@ -30,7 +30,7 @@ public class BroadcastSend extends Thread {
 
     BroadcastSend(){
         try {
-            onLine.put("name", SharedPreferencesUtils.getName());
+            onLine.put("dev_name", SharedPreferencesUtils.getName());
             TLog.e("BroadcastSend");
         } catch (JSONException e) {
             e.printStackTrace();

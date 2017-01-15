@@ -28,14 +28,15 @@ public class OnlineModel extends Model {
                     @Override
                     public void call(Long aLong) {
                         if (aLong == 5) {
-                            EventBus.getDefault().post(new OnlineEvent(getSourceIp()));
+                            EventBus.getDefault().post(new OnlineEvent(0,getSourceIp()));
                         }
                     }
                 });
     }
 
     public void release(){
-        timer.unsubscribe();
+        if (timer!=null){
+        timer.unsubscribe();}
     }
 
 

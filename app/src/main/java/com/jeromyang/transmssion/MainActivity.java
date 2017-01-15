@@ -3,6 +3,9 @@ package com.jeromyang.transmssion;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -25,6 +28,9 @@ public class MainActivity extends BaseActivity {
     final CopyOnWriteArrayList<OnlineModel> onlineModels = new CopyOnWriteArrayList<>();
 
     TextView setTe;
+    RecyclerView onLineListView;
+    OnlineRecyclerAdapter onlineRecyclerAdapter;
+
     private BroadcastDiscover broadcastDiscover;
     private BroadcastSend broadcastSend;
 
@@ -43,31 +49,34 @@ public class MainActivity extends BaseActivity {
         EventBus.getDefault().register(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setTe = (TextView) findViewById(R.id.receive);
+        onLineListView = (RecyclerView) findViewById(R.id.online_list);
+        onlineRecyclerAdapter = new OnlineRecyclerAdapter();
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+
+        onLineListView.setLayoutManager(layoutManager);
+        onLineListView.setItemAnimator(new DefaultItemAnimator());
+        onLineListView.setAdapter(onlineRecyclerAdapter);
 
 
-         broadcastDiscover = new BroadcastDiscover(new BroadcastDiscover.Listener() {
+        broadcastDiscover = new BroadcastDiscover(new BroadcastDiscover.Listener() {
             @Override
             public void receiver(DataResult dataResult) {
-                if (dataResult.getType() == Packet.DATA_TYPE_ONLINE){ //收到在线通知
+                if (dataResult.getType() == Packet.DATA_TYPE_ONLINE) { //收到在线通知
                     OnlineModel onlineModel = (OnlineModel) dataResult.getT();
                     int result = isExist(onlineModel);
-                    if (result != -1){
+                    if (result != -1) {
                         onlineModels.remove(result);
-                        onlineModels.add(onlineModel);
-
-                    }else {
-                        onlineModels.add(onlineModel);
+                        onlineModels.add(result, onlineModel);
+                        onlineRecyclerAdapter.setDataList(onlineModels, result);
+                    } else {
+                        onlineModels.add(0, onlineModel);
+                        onlineRecyclerAdapter.setDataList(onlineModels, 0);
                     }
+
                     onlineModel.start();
-                    TLog.e("当前局域网人数为： " + onlineModels.size());
+//                    TLog.e("当前局域网人数为： " + onlineModels.size());
 
 
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateOnline();
-                        }
-                    });
 
                 }
 
@@ -75,28 +84,25 @@ public class MainActivity extends BaseActivity {
         });
         broadcastDiscover.start();
 
-         broadcastSend = new BroadcastSend();
+        broadcastSend = new BroadcastSend();
         broadcastSend.start();
     }
 
 
-    private void updateOnline(){
+    private void updateOnline(final int size) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                synchronized (onlineModels){
-                    setTe.setText("当前局域网在线人数：" +onlineModels.size());
-
-                }
+                    setTe.setText("当前局域网在线人数：" + size);
             }
         });
 
     }
 
 
-    private int isExist(OnlineModel onlineModel){
-        for (int i = 0 ; i < onlineModels.size() ; i ++){
-            if (onlineModels.get(i).getSourceIp() == onlineModel.getSourceIp()){
+    private int isExist(OnlineModel onlineModel) {
+        for (int i = 0; i < onlineModels.size(); i++) {
+            if (onlineModels.get(i).getSourceIp() == onlineModel.getSourceIp()) {
                 onlineModels.get(i).release();
                 onlineModels.get(i).timer = null;
                 return i;
@@ -106,9 +112,9 @@ public class MainActivity extends BaseActivity {
         return -1;
     }
 
-    private int isExist(int sourceIp){
-        for (int i = 0 ; i < onlineModels.size() ; i ++){
-            if (onlineModels.get(i).getSourceIp() == sourceIp){
+    private int isExist(int sourceIp) {
+        for (int i = 0; i < onlineModels.size(); i++) {
+            if (onlineModels.get(i).getSourceIp() == sourceIp) {
                 onlineModels.get(i).release();
                 onlineModels.get(i).timer = null;
                 return i;
@@ -120,12 +126,19 @@ public class MainActivity extends BaseActivity {
 
 
     @Subscribe
-    public void timeout(OnlineEvent onlineEvent){
-        int result = isExist(onlineEvent.getSourceIp());
-        if (result!=-1){
-            onlineModels.remove(result);
-            TLog.e("time out 当前人数:" + onlineModels.size());
-            updateOnline();
+    public void timeout(OnlineEvent onlineEvent) {
+        synchronized (onlineModels) {
+            if (onlineEvent.getType() == 0) {
+                int result = isExist(onlineEvent.getSourceIp());
+                if (result != -1) {
+                    onlineModels.remove(result);
+                    onlineRecyclerAdapter.setDataList(onlineModels, result);
+                    TLog.e("time out 当前人数:" + onlineModels.size());
+
+                }
+            }else if (onlineEvent.getType() == 1){
+                updateOnline(onlineEvent.getSize());
+            }
         }
     }
 }

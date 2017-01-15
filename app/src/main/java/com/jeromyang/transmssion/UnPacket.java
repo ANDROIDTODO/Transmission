@@ -4,6 +4,9 @@ import com.jeromyang.transmssion.model.DataResult;
 import com.jeromyang.transmssion.model.Model;
 import com.jeromyang.transmssion.model.OnlineModel;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -66,8 +69,11 @@ public class UnPacket {
                                 offset += 2;
                                 try {
                                     String data = new String(packet,offset,dataLength,"UTF-8");
+                                    JSONObject jsonObject = new JSONObject(data);
+                                    model.setName(jsonObject.getString("dev_name"));
+
                                     model.setData(data);
-                                } catch (UnsupportedEncodingException e) {
+                                } catch (UnsupportedEncodingException | JSONException e) {
                                     e.printStackTrace();
                                 }
                             }
