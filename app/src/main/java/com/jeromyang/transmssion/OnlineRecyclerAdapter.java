@@ -22,12 +22,12 @@ import rx.functions.Action1;
  * Created by Jeromeyang on 2017/1/15.
  */
 
-public class OnlineRecyclerAdapter extends RecyclerView.Adapter<OnlineRecyclerAdapter.ViewHolder>{
+public class OnlineRecyclerAdapter extends RecyclerView.Adapter<OnlineRecyclerAdapter.ViewHolder> {
 
     private final List<OnlineModel> models = new ArrayList<>();
 
 
-    public void setDataList(final List<OnlineModel> modelss, final int position){
+    public void setDataList(final List<OnlineModel> modelss, final int position) {
 
 
         Observable.just(models)
@@ -35,28 +35,26 @@ public class OnlineRecyclerAdapter extends RecyclerView.Adapter<OnlineRecyclerAd
                 .subscribe(new Action1<List<OnlineModel>>() {
                     @Override
                     public void call(List<OnlineModel> onlineModels) {
-                        synchronized (models){
-                            models.clear();
-                        if (models.size() == modelss.size()){
-
-                            models.addAll(modelss);
-                            notifyItemChanged(position);
-                        }else if (models.size() > modelss.size()){ //删除
-                            notifyItemRemoved(position);
-                            models.addAll(modelss);
-
-                        }else if (models.size() < modelss.size()){
-                            models.addAll(modelss);
-
-                            notifyItemInserted(0);
+                        synchronized (models) {
+                            if (models.size() == modelss.size()) {
+                                models.clear();
+                                models.addAll(modelss);
+                                notifyItemChanged(position);
+                            } else if (models.size() < modelss.size()) {
+                                models.clear();
+                                models.addAll(modelss);
+                                notifyItemInserted(0);
+                            } else if (models.size() > modelss.size()) { //删除
+                                notifyItemRemoved(position);
+                                models.clear();
+                                models.addAll(modelss);
+                            }
+                            EventBus.getDefault().post(new OnlineEvent(1, models.size(), 0));
                         }
-                        notifyDataSetChanged();
-                            EventBus.getDefault().post(new OnlineEvent(1,models.size(),0));
-                    }}
+                    }
                 });
 
     }
-
 
 
     @Override
@@ -74,26 +72,25 @@ public class OnlineRecyclerAdapter extends RecyclerView.Adapter<OnlineRecyclerAd
     }
 
 
-
     @Override
     public int getItemCount() {
         return models.size();
     }
 
-    public void addItem(OnlineModel onlineModel){
-        models.add(0,onlineModel);
+    public void addItem(OnlineModel onlineModel) {
+        models.add(0, onlineModel);
         Observable.just(onlineModel)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<OnlineModel>() {
                     @Override
                     public void call(OnlineModel onlineModel) {
-                        notifyItemChanged(0,onlineModel);
+                        notifyItemChanged(0, onlineModel);
                     }
                 });
 
     }
 
-    public void remove(int position){
+    public void remove(int position) {
         models.remove(position);
 
         Observable.just(position)
@@ -108,7 +105,7 @@ public class OnlineRecyclerAdapter extends RecyclerView.Adapter<OnlineRecyclerAd
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         public TextView name;
         public TextView ip_name;
