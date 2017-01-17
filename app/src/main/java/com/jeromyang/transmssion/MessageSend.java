@@ -1,7 +1,5 @@
 package com.jeromyang.transmssion;
 
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -58,16 +56,17 @@ public class MessageSend extends Thread {
     }
 
 
-    public MessageSend setSendMessage(int type, JSONObject message , int desIp) throws IOException {
+    public MessageSend setSendMessage(Message message) throws IOException {
+//    public MessageSend setSendMessage(int type, JSONObject message , int desIp) throws IOException {
 
-            if (desIp == -1){
+            if (message.getDesIp() == -1){
                 desAddress = InetAddress.getByName(Packet.getInstance().getCurrentBroadcastIpName());
             }else {
-                desAddress = InetAddress.getByName(Packet.intToIp(desIp));
+                desAddress = InetAddress.getByName(Packet.intToIp(message.getDesIp()));
             }
 
             outputStream = Packet.getInstance().getSendOnlineBroadCast();
-            byte[] sendJson = message.toString().getBytes();
+            byte[] sendJson = message.getMessageJson().toString().getBytes();
             outputStream.write((sendJson.length >> 8) & 0xff);
             outputStream.write(sendJson.length & 0xff);
             outputStream.write(sendJson);
