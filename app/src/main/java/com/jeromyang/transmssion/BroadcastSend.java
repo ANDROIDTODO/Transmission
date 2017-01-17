@@ -13,6 +13,7 @@ import java.net.InetAddress;
 
 /**
  * Created by Jeromeyang on 2017/1/14.
+ * 发送在线通知
  */
 
 public class BroadcastSend extends Thread {
@@ -48,7 +49,7 @@ public class BroadcastSend extends Thread {
             sendBroadcast(TransmissionHelper.getDatagramSocket());
 
             try {
-                Thread.sleep(2000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -75,7 +76,7 @@ public class BroadcastSend extends Thread {
         try {
             InetAddress inetAddress = InetAddress.getByName(Packet.getInstance().getCurrentBroadcastIpName());
             ByteArrayOutputStream byteArrayOutputStream = getOutputStream();
-            DatagramPacket datagramPacket = new DatagramPacket(byteArrayOutputStream.toByteArray(),byteArrayOutputStream.toByteArray().length,inetAddress,T.UDP_PORT);
+            DatagramPacket datagramPacket = new DatagramPacket(byteArrayOutputStream.toByteArray(),byteArrayOutputStream.toByteArray().length,inetAddress,datagramSocket.getPort());
             datagramSocket.send(datagramPacket);
 
         } catch (IOException e) {
