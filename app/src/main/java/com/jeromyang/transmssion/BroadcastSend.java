@@ -76,7 +76,8 @@ public class BroadcastSend extends Thread {
         try {
             InetAddress inetAddress = InetAddress.getByName(Packet.getInstance().getCurrentBroadcastIpName());
             ByteArrayOutputStream byteArrayOutputStream = getOutputStream();
-            DatagramPacket datagramPacket = new DatagramPacket(byteArrayOutputStream.toByteArray(),byteArrayOutputStream.toByteArray().length,inetAddress,datagramSocket.getPort());
+            DatagramPacket datagramPacket = new DatagramPacket(byteArrayOutputStream.toByteArray(),
+                    byteArrayOutputStream.toByteArray().length,inetAddress,T.UDP_PORT);
             datagramSocket.send(datagramPacket);
 
         } catch (IOException e) {

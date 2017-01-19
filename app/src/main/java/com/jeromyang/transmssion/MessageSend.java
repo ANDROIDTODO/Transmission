@@ -11,6 +11,7 @@ import java.net.InetAddress;
 /**
  * Created by Jeromeyang on 2017/1/16.
  * 用来发送操作消息
+ * 时间由外部控制
  */
 
 public class MessageSend extends Thread {
