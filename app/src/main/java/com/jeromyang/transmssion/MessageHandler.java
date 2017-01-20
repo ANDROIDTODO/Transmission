@@ -1,11 +1,11 @@
 package com.jeromyang.transmssion;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import com.jeromyang.transmssion.model.MessageModel;
 import com.jeromyang.transmssion.model.SendInfo;
 import com.jeromyang.transmssion.utils.RxObservableUtil;
+import com.jeromyang.transmssion.utils.ToastUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +82,7 @@ public class MessageHandler {
                 RxObservableUtil.getMainThreadObservable().subscribe(new Action1() {
                     @Override
                     public void call(Object o) {
-                        Toast.makeText(App.context, "普通消息 content=" + message.getData(), Toast.LENGTH_SHORT).show();
+                        ToastUtil.toast("普通消息 content=");
                     }
                 });
             }
@@ -97,14 +97,14 @@ public class MessageHandler {
             RxObservableUtil.getMainThreadObservable().subscribe(new Action1() {
                 @Override
                 public void call(Object o) {
-                    Toast.makeText(App.context, "收到回复，停止发送消息 content=" + message.getData(), Toast.LENGTH_SHORT).show();
+                    ToastUtil.toast("收到回复，停止发送消息 content=");
                 }
             });
         } else {
             RxObservableUtil.getMainThreadObservable().subscribe(new Action1() {
                 @Override
                 public void call(Object o) {
-                    Toast.makeText(App.context, "无对应请求，或请求已处理，不做处理" + message.getData(), Toast.LENGTH_SHORT).show();
+                    ToastUtil.toast("无对应请求，或请求已处理，不做处理");
                 }
             });
         }
@@ -118,7 +118,7 @@ public class MessageHandler {
         RxObservableUtil.getMainThreadObservable().subscribe(new Action1() {
             @Override
             public void call(Object o) {
-                Toast.makeText(App.context, "回复消息", Toast.LENGTH_SHORT).show();
+                ToastUtil.toast("回复消息");
             }
         });
     }

@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
 /**
@@ -21,6 +22,7 @@ public class SendOperation {
 
     public static void init(MessageSend messageSend) {
         mMessageSend = messageSend;
+        stopMessageSend();
     }
 
     public static SendOperation getInstance() {
@@ -48,6 +50,7 @@ public class SendOperation {
                     if (messageModel.getReplyType() == MessageModel.REPLY_TYPE_REQUEST) {  //如果是要求回复的消息，加入到待回复的列表
                         MessageHandler.getInstance().addToReplyMessage(messageModel);
                     }
+                    mMessageSend.setWaited(false);
                     setMessageSendTimeOut(timeOut);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -61,6 +64,7 @@ public class SendOperation {
             timer.unsubscribe();
         }
         timer = Observable.interval(0, 1, TimeUnit.SECONDS)
+                .unsubscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<Long>() {
                     @Override
                     public void call(Long aLong) {

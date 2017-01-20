@@ -1,5 +1,7 @@
 package com.jeromyang.transmssion;
 
+import android.util.Log;
+
 import com.jeromyang.transmssion.model.MessageModel;
 
 import java.io.ByteArrayOutputStream;
@@ -74,7 +76,7 @@ public class MessageSend extends Thread {
 
 
     private boolean sendMessage() throws IOException {
-
+        Log.e("MessageSend", "tag2--sendMessage outPutStream==null" + (outputStream == null));
         if (outputStream == null) {
             return false;
         }
