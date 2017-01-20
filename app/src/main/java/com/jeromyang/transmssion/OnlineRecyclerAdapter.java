@@ -24,6 +24,8 @@ import rx.functions.Action1;
 
 public class OnlineRecyclerAdapter extends RecyclerView.Adapter<OnlineRecyclerAdapter.ViewHolder> {
 
+    private OnItemClickListener onItemClickListener;
+
     private final List<OnlineModel> models = new ArrayList<>();
 
 
@@ -66,9 +68,17 @@ public class OnlineRecyclerAdapter extends RecyclerView.Adapter<OnlineRecyclerAd
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.name.setText(models.get(position).getName());
         holder.ip_name.setText(Packet.intToIp(models.get(position).getSourceIp()));
+        if (onItemClickListener != null) {
+            holder.rootView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onItemClickListener.onItemClick(holder.rootView, position,models.get(position));
+                }
+            });
+        }
     }
 
 
@@ -104,17 +114,26 @@ public class OnlineRecyclerAdapter extends RecyclerView.Adapter<OnlineRecyclerAd
 
     }
 
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-
+        public View rootView;
         public TextView name;
         public TextView ip_name;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            rootView = itemView;
             name = (TextView) itemView.findViewById(R.id.name);
             ip_name = (TextView) itemView.findViewById(R.id.ip_name);
 
         }
     }
+
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position,OnlineModel onlineModel);
+    }
+
 }

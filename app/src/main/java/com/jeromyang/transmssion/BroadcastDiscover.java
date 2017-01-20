@@ -1,7 +1,6 @@
 package com.jeromyang.transmssion;
 
 import com.jeromyang.transmssion.model.DataResult;
-import com.jeromyang.transmssion.model.Model;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,7 +17,7 @@ public class BroadcastDiscover extends Thread {
 
     private boolean receive = true;
 
-    public void setReceive(boolean receive){
+    public void setReceive(boolean receive) {
         this.receive = receive;
     }
 
@@ -28,7 +27,7 @@ public class BroadcastDiscover extends Thread {
         super.run();
 
         try {
-            receiveBroadcast(TransmissionHelper.getDatagramSocket());
+            receiveBroadcast(TransmissionHelper.getDatagramSocket(T.BROADCAST_UDP_PORT));
         } catch (IOException e) {
             TLog.e("receive 1 error : " + e.getMessage());
 
@@ -39,28 +38,23 @@ public class BroadcastDiscover extends Thread {
     }
 
 
-
-    BroadcastDiscover(Listener listener){
+    BroadcastDiscover(Listener listener) {
 
         this.listener = listener;
 
     }
 
 
-
     private void receiveBroadcast(DatagramSocket datagramSocket) throws IOException {
         byte[] data = new byte[2048];
-        while (receive){
+        while (receive) {
             DatagramPacket datagramPacket = new DatagramPacket(data, data.length);
-
-
-        datagramSocket.receive(datagramPacket);
-
+            datagramSocket.receive(datagramPacket);
             DataResult data1 = UnPacket.getInstance().getData(datagramPacket.getData());
-            if (data1!=null && data1.isResult()){
+            if (data1 != null && data1.isResult() && data1.getT().getDataType()==Packet.DATA_TYPE_ONLINE) {
 //                data1.getType()
 //                TLog.e(data1.toString());
-                if (listener!=null){
+                if (listener != null) {
                     listener.receiver(data1);
                 }
             }
@@ -70,10 +64,10 @@ public class BroadcastDiscover extends Thread {
 //            if (listener!=null){
 //                listener.receiver(s);
 //            }
-    }
+        }
     }
 
-     interface Listener{
+    interface Listener {
         void receiver(DataResult dataResult);
     }
 }
