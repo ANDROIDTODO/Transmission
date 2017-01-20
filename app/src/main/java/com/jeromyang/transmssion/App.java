@@ -3,6 +3,11 @@ package com.jeromyang.transmssion;
 import android.app.Application;
 import android.content.Context;
 
+import com.jeromeyang.transmssion.TEventBusIndex;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.util.AsyncExecutor;
+
 /**
  * Created by Jeromeyang on 2017/1/13.
  */
@@ -16,5 +21,17 @@ public class App extends Application {
         super.onCreate();
         context = this;
         TransmissionHelper.init();
+
+
+        initOtherLib();
+
+    }
+
+
+
+    private void initOtherLib(){
+
+        EventBus.builder().throwSubscriberException(BuildConfig.DEBUG).addIndex(new TEventBusIndex()).installDefaultEventBus();
+
     }
 }
