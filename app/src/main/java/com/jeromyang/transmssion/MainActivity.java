@@ -108,7 +108,7 @@ public class MainActivity extends BaseActivity {
             public void onItemClick(View view, int position, final OnlineModel onlineModel) {
                 Toast.makeText(App.context, "发送消息 desIp=" + onlineModel.getSourceIp(), Toast.LENGTH_SHORT).show();
                 SendOperation.getInstance().sendMessage(MessageModel.createMessage(MessageModel.SEND_INFO, onlineModel.getSourceIp(),
-                        new SendInfo().getJsonString()).setReplyTypeRequest(), 10);
+                        new SendInfo().getJsonString()), 10);
             }
         });
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
