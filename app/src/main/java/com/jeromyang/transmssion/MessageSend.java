@@ -1,5 +1,7 @@
 package com.jeromyang.transmssion;
 
+import com.jeromyang.transmssion.model.MessageModel;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,24 +20,21 @@ public class MessageSend extends Thread {
 
     private ByteArrayOutputStream outputStream;
 
-    private DatagramSocket datagramSocket;
+    private DatagramSocket sendDatagramSocket;
 
     private InetAddress desAddress;
 
-
-
-
     public MessageSend() {
         setDaemon(true);
-        datagramSocket = TransmissionHelper.getDatagramSocket();
+        sendDatagramSocket = TransmissionHelper.getDatagramSocket(T.MESSAGE_UDP_PORT);
 
     }
 
-    public void setWaited(boolean waited){
+    public void setWaited(boolean waited) {
         this.isWaited = waited;
-        if (!isWaited){
+        if (!isWaited) {
             waitMessage(false);
-        }else {
+        } else {
             outputStream = null;
             desAddress = null;
         }
@@ -56,37 +55,34 @@ public class MessageSend extends Thread {
     }
 
 
-    public MessageSend setSendMessage(Message message) throws IOException {
-//    public MessageSend setSendMessage(int type, JSONObject message , int desIp) throws IOException {
+    public MessageSend setSendMessage(MessageModel message) throws IOException {
 
-            if (message.getDesIp() == -1){
-                desAddress = InetAddress.getByName(Packet.getInstance().getCurrentBroadcastIpName());
-            }else {
-                desAddress = InetAddress.getByName(Packet.intToIp(message.getDesIp()));
-            }
+        if (message.getDestinationIp() == -1) {
+            desAddress = InetAddress.getByName(Packet.getInstance().getCurrentBroadcastIpName());
+        } else {
+            desAddress = InetAddress.getByName(Packet.intToIp(message.getDestinationIp()));
+        }
 
-            outputStream = Packet.getInstance().getSendOnlineBroadCast();
-            byte[] sendJson = message.getMessageJson().toString().getBytes();
-            outputStream.write((sendJson.length >> 8) & 0xff);
-            outputStream.write(sendJson.length & 0xff);
-            outputStream.write(sendJson);
+        outputStream = Packet.getInstance().getSendOutputStream(Packet.DATA_TYPE_MESSAGE, message.getDestinationIp());
+        byte[] sendJson = message.getMessageJson().toString().getBytes();
+        outputStream.write((sendJson.length >> 8) & 0xff);
+        outputStream.write(sendJson.length & 0xff);
+        outputStream.write(sendJson);
 
         return this;
     }
 
 
+    private boolean sendMessage() throws IOException {
 
-    public MessageSend sendMessage() throws IOException {
-
-        if (outputStream == null){
-            return this;
+        if (outputStream == null) {
+            return false;
         }
 
-        DatagramPacket datagramPacket = new DatagramPacket(outputStream.toByteArray(),outputStream.toByteArray().length,desAddress,datagramSocket.getPort());
-        datagramSocket.send(datagramPacket);
+        DatagramPacket datagramPacket = new DatagramPacket(outputStream.toByteArray(), outputStream.toByteArray().length, desAddress, T.MESSAGE_UDP_PORT);
+        sendDatagramSocket.send(datagramPacket);
 
-
-        return this;
+        return true;
     }
 
     @Override
@@ -116,10 +112,6 @@ public class MessageSend extends Thread {
         }
 
     }
-
-
-
-
 
 
 }

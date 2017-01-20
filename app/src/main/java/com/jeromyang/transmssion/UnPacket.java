@@ -1,13 +1,9 @@
 package com.jeromyang.transmssion;
 
+import android.util.Log;
+
 import com.jeromyang.transmssion.model.DataResult;
 import com.jeromyang.transmssion.model.Model;
-import com.jeromyang.transmssion.model.OnlineModel;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * Created by Jeromeyang on 2017/1/14.
@@ -16,26 +12,26 @@ import java.io.UnsupportedEncodingException;
 public class UnPacket {
 
 
-    private UnPacket(){}
+    private UnPacket() {
+    }
 
-    public static UnPacket getInstance(){
+    public static UnPacket getInstance() {
 
         return INSTANCE.instance;
     }
 
 
-    private static class INSTANCE{
+    private static class INSTANCE {
         static UnPacket instance = new UnPacket();
     }
 
 
-
-    public int isValidData(byte[] packet){
+    public int isValidData(byte[] packet) {
 
         int offset = 0;
-        if (packet.length >= offset + 4 && bytesToIntReverse(packet,offset) == 0xDEADBEDF){
+        if (packet.length >= offset + 4 && bytesToIntReverse(packet, offset) == 0xDEADBEDF) {
             offset += 4;
-            if (packet.length >= offset + 1 && packet[offset] == 0x01){
+            if (packet.length >= offset + 1 && packet[offset] == 0x01) {
                 offset += 1;
                 return offset;
             }
@@ -44,50 +40,45 @@ public class UnPacket {
         return 0;
     }
 
-
-    public DataResult getData(byte[] packet){
-        DataResult dataResult = new DataResult();
-        int offset = isValidData(packet);
-        if (offset!=0){
-            if (packet.length >= offset + 1 ){
-
-                if ((packet[offset]&0xff)  == Packet.DATA_TYPE_ONLINE){ //在线通知
-                    OnlineModel model = new OnlineModel();
-                    offset += 1;
-
-                    if (packet.length >= offset + 4){
-
-                        model.setSourceIp(bytesToInt(packet,offset));
-                        offset += 4;
-                        if (packet.length >= offset +4){
-
-                            model.setDestinationIp(bytesToInt(packet,offset));
-                            offset += 4;
-                            if (packet.length >= offset + 2){
-
-                                int dataLength = (packet[offset]<<8)|(packet[offset+1]);
-                                offset += 2;
-                                try {
-                                    String data = new String(packet,offset,dataLength,"UTF-8");
-                                    JSONObject jsonObject = new JSONObject(data);
-                                    model.setName(jsonObject.getString("dev_name"));
-
-                                    model.setData(data);
-                                } catch (UnsupportedEncodingException | JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    }
-                    if (model.getSourceIp() != 0 && model.getSourceIp() != Packet.getInstance().getCurrentHostIp()){
-                        dataResult.setResult(true);
-                    }
-                    dataResult.setT(model);
-                    dataResult.setType(Packet.DATA_TYPE_ONLINE);
+    /**
+     * 数据转换为model
+     **/
+    private Model dataToModel(byte[] packet, int offset) {
+        if (offset != 0 && packet.length >= offset + 1) {
+            int dataType = (packet[offset] & 0xff);
+            Model model = ModelFactory.getInstance().createModel(dataType);
+            offset += 1;
+            if (packet.length >= offset + 4) { //ip处理
+                model.setSourceIp(bytesToInt(packet, offset));
+                offset += 4;
+                if (packet.length >= offset + 4) {
+                    model.setDestinationIp(bytesToInt(packet, offset));
+                    offset += 4;
+                    model.handleData(packet, offset);
                 }
             }
+            if (dataType != Packet.DATA_TYPE_ONLINE) {
+                Log.e("UnPacket", "tag2--dataType=" + dataType + " content=" + model.getData());
+            }
+            return model;
         }
+        return null;
+    }
 
+    /**
+     * 返回dataResult
+     **/
+    public DataResult getData(byte[] packet) {
+        DataResult dataResult = new DataResult();
+        int offset = isValidData(packet);
+        if (offset != 0) {
+            Model model = dataToModel(packet, offset);
+            if (model != null) {
+                dataResult.setResult(model.dataResult());
+                dataResult.setT(model);
+                dataResult.setType(model.getDataType());
+            }
+        }
         return dataResult;
     }
 
@@ -100,12 +91,11 @@ public class UnPacket {
     }
 
 
-
     private static int bytesToIntReverse(byte[] bytes, int offset) {
-        return (bytes[offset ] & 0xFF) << 24
+        return (bytes[offset] & 0xFF) << 24
                 | (bytes[offset + 1] & 0xFF) << 16
                 | (bytes[offset + 2] & 0xFF) << 8
-                | (bytes[offset +3] & 0xFF);
+                | (bytes[offset + 3] & 0xFF);
     }
 
 

@@ -1,11 +1,8 @@
 package com.jeromyang.transmssion;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,18 +11,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jeromyang.transmssion.base.BaseActivity;
 import com.jeromyang.transmssion.event.OnlineEvent;
 import com.jeromyang.transmssion.model.DataResult;
+import com.jeromyang.transmssion.model.MessageModel;
 import com.jeromyang.transmssion.model.OnlineModel;
+import com.jeromyang.transmssion.model.SendInfo;
 import com.jeromyang.transmssion.utils.FileUtil;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MainActivity extends BaseActivity {
@@ -40,8 +38,8 @@ public class MainActivity extends BaseActivity {
 
     private BroadcastDiscover broadcastDiscover;
     private BroadcastSend broadcastSend;
-
-
+    private MessageSend messageSend;
+    private MessageReceiver messageReceiver;
 
     @Override
     protected void onDestroy() {
@@ -49,6 +47,7 @@ public class MainActivity extends BaseActivity {
         EventBus.getDefault().unregister(this);
         broadcastSend.setSend(false);
         broadcastDiscover.setReceive(false);
+        messageReceiver.setReceive(false);
     }
 
 
@@ -83,7 +82,6 @@ public class MainActivity extends BaseActivity {
 //                    TLog.e("当前局域网人数为： " + onlineModels.size());
 
 
-
                 }
 
             }
@@ -92,6 +90,12 @@ public class MainActivity extends BaseActivity {
 
         broadcastSend = new BroadcastSend();
         broadcastSend.start();
+
+        messageReceiver = new MessageReceiver();
+        messageReceiver.start();
+        messageSend = new MessageSend();
+        messageSend.start();
+        SendOperation.getInstance().init(messageSend);
     }
 
     private void initView() {
@@ -99,6 +103,14 @@ public class MainActivity extends BaseActivity {
         setTe = (TextView) findViewById(R.id.receive);
         onLineListView = (RecyclerView) findViewById(R.id.online_list);
         onlineRecyclerAdapter = new OnlineRecyclerAdapter();
+        onlineRecyclerAdapter.setOnItemClickListener(new OnlineRecyclerAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position, final OnlineModel onlineModel) {
+                Toast.makeText(App.context, "发送消息 desIp=" + onlineModel.getSourceIp(), Toast.LENGTH_SHORT).show();
+                SendOperation.getInstance().sendMessage(MessageModel.createMessage(MessageModel.SEND_INFO, onlineModel.getSourceIp(),
+                        new SendInfo().getJsonString()).setReplyTypeRequest(), 10);
+            }
+        });
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
         onLineListView.setLayoutManager(layoutManager);
@@ -112,12 +124,12 @@ public class MainActivity extends BaseActivity {
             public boolean onMenuItemClick(MenuItem item) {
 
                 int menuId = item.getItemId();
-                if (menuId == R.id.action_setting){
+                if (menuId == R.id.action_setting) {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("*/*");
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     try {
-                        startActivityForResult( Intent.createChooser(intent, "Select a File to Upload"), 0xaa);
+                        startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"), 0xaa);
                     } catch (android.content.ActivityNotFoundException ex) {
                     }
                 }
@@ -132,14 +144,14 @@ public class MainActivity extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
 
-        if(resultCode != RESULT_OK){
+        if (resultCode != RESULT_OK) {
             return;
         }
 
-        switch (requestCode){
-            case 0xaa :
-                    Uri selectedMediaUri = data.getData();
-                TLog.e("choice path : " + FileUtil.getPath(this,selectedMediaUri));
+        switch (requestCode) {
+            case 0xaa:
+                Uri selectedMediaUri = data.getData();
+                TLog.e("choice path : " + FileUtil.getPath(this, selectedMediaUri));
                 break;
             default:
                 break;
@@ -150,7 +162,7 @@ public class MainActivity extends BaseActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                    setTe.setText("当前局域网在线人数：" + size);
+                setTe.setText("当前局域网在线人数：" + size);
             }
         });
 
@@ -193,7 +205,7 @@ public class MainActivity extends BaseActivity {
                     TLog.e("time out 当前人数:" + onlineModels.size());
 
                 }
-            }else if (onlineEvent.getType() == 1){
+            } else if (onlineEvent.getType() == 1) {
                 updateOnline(onlineEvent.getSize());
             }
         }

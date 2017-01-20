@@ -24,11 +24,11 @@ public class BroadcastSend extends Thread {
 
     private boolean send = true;
 
-    public void setSend(boolean send){
+    public void setSend(boolean send) {
         this.send = send;
     }
 
-    BroadcastSend(){
+    BroadcastSend() {
         try {
             onLine.put("dev_name", SharedPreferencesUtils.getName());
             TLog.e("BroadcastSend");
@@ -42,11 +42,9 @@ public class BroadcastSend extends Thread {
     public void run() {
         super.run();
 
+        while (send) {
 
-        while (send){
-
-
-            sendBroadcast(TransmissionHelper.getDatagramSocket());
+            sendBroadcast(TransmissionHelper.getDatagramSocket(T.BROADCAST_UDP_PORT));
 
             try {
                 Thread.sleep(500);
@@ -59,8 +57,9 @@ public class BroadcastSend extends Thread {
     }
 
     private ByteArrayOutputStream getOutputStream() throws IOException {
-        if (outputStream == null){
+        if (outputStream == null) {
             outputStream = Packet.getInstance().getSendOnlineBroadCast();
+//            outputStream = Packet.getInstance().getSendOnlineBroadCast();
             byte[] sendJson = onLine.toString().getBytes();
             outputStream.write((sendJson.length >> 8) & 0xff);
             outputStream.write(sendJson.length & 0xff);
@@ -70,24 +69,19 @@ public class BroadcastSend extends Thread {
         return outputStream;
     }
 
-    private void sendBroadcast(DatagramSocket datagramSocket){
+    private void sendBroadcast(DatagramSocket datagramSocket) {
 
 
         try {
             InetAddress inetAddress = InetAddress.getByName(Packet.getInstance().getCurrentBroadcastIpName());
             ByteArrayOutputStream byteArrayOutputStream = getOutputStream();
-            DatagramPacket datagramPacket = new DatagramPacket(byteArrayOutputStream.toByteArray(),
-                    byteArrayOutputStream.toByteArray().length,inetAddress,T.UDP_PORT);
+//            TLog.e("send port :"+ datagramSocket.getPort());
+            DatagramPacket datagramPacket = new DatagramPacket(byteArrayOutputStream.toByteArray(), byteArrayOutputStream.toByteArray().length, inetAddress, T.BROADCAST_UDP_PORT);
             datagramSocket.send(datagramPacket);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
-
-
-
 
 }
